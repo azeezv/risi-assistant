@@ -1,0 +1,14 @@
+{
+	"name": "risi-dev",
+	"build": {
+		"dockerfile": "../Dockerfile",
+		"context": ".."
+	},
+	"workspaceFolder": "/app",
+	"workspaceMount": "source=${localWorkspaceFolder},target=/app,type=bind",
+	"runArgs": [
+		"--device=/dev/snd"
+	],
+	"remoteUser": "root",
+	"overrideCommand": false
+}
