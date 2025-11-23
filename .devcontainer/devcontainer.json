@@ -4,11 +4,17 @@
 		"dockerfile": "../Dockerfile",
 		"context": ".."
 	},
-	"workspaceFolder": "/app",
-	"workspaceMount": "source=${localWorkspaceFolder},target=/app,type=bind",
-	"runArgs": [
-		"--device=/dev/snd"
+	"mounts": [
+		// 1. The "Phone Line" (Socket) - Connects Container to Host
+		"type=bind,source=/run/user/1000/pulse/native,target=/run/user/1000/pulse/native",
+		// 2. The "Password" (Cookie) - Allows 'root' to use the Host's Audio
+		"type=bind,source=${localEnv:HOME}/.config/pulse/cookie,target=/root/.config/pulse/cookie"
 	],
-	"remoteUser": "root",
-	"overrideCommand": false
+	"containerEnv": {
+		"XDG_RUNTIME_DIR": "/run/user/1000",
+		"PULSE_SERVER": "unix:/run/user/1000/pulse/native",
+		"PULSE_COOKIE": "/root/.config/pulse/cookie"
+	},
+	// REMOVED: "--device=/dev/snd" (Not needed for Bluetooth/Pulse)
+	"runArgs": []
 }

@@ -4,7 +4,7 @@ import numpy as np
 from deepgram import AsyncDeepgramClient
 from deepgram.core.events import EventType
 from deepgram.extensions.types.sockets import ListenV2SocketClientResponse
-from lib.mic_stream import MicStream
+from src.lib.mic_stream import MicStream
 
 class DeepGramSTT:
     def __init__(self):
@@ -19,7 +19,7 @@ class DeepGramSTT:
         async with self.client.listen.v2.connect(
             model="flux-general-en",
             encoding="linear16",
-            sample_rate=16000
+            sample_rate="16000"
         ) as connection:
             self.connection = connection
 
@@ -39,8 +39,8 @@ class DeepGramSTT:
             await listen_task
 
     def _on_message(self, msg: ListenV2SocketClientResponse):
-        if hasattr(msg, "transcript") and msg.transcript:
-            print("🗣️", msg.transcript)
+        if hasattr(msg, "transcript") and msg.transcript: # type: ignore
+            print("🗣️", msg.transcript) # type: ignore
 
     async def _send_audio(self, chunk):
         if self.connection:
