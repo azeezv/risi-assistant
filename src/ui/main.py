@@ -5,6 +5,7 @@ import sounddevice as sd
 
 from PyQt6.QtCore import Qt, QThread, pyqtSignal
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QPushButton
+from PyQt6.QtGui import QColor
 
 from src.ui.text_display import TextDisplay
 from src.ui.voice_visualizer import VoiceVisualizer
@@ -56,7 +57,8 @@ class MainWindow(QWidget):
 
         self.setWindowTitle("Voice Assistant")
         self.resize(500, 220)
-
+        self.setStyleSheet("background-color: rgb(15, 15, 30);")
+        
         layout = QVBoxLayout(self)
         layout.setSpacing(0)
         layout.setContentsMargins(0, 0, 0, 0)
@@ -67,7 +69,7 @@ class MainWindow(QWidget):
 
         # --- TEXT LABEL BELOW VISUALIZER ---
         self.text_display = TextDisplay(self)
-        self.text_display.append_word("Press 'Start Mic' to begin...")
+        self.text_display.append_word("Press 'Start Mic' to begin...Press 'Start Mic' to begin...Press 'Start Mic' to begin...Press 'Start Mic' to begin...Press 'Start Mic' to begin...Press 'Start Mic' to begin...Press 'Start Mic' to begin...")
         
         # --- RECORD BTN ---
         self.toggle_btn = QPushButton("Start Mic")

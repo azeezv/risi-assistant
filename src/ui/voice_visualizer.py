@@ -20,8 +20,11 @@ class VoiceVisualizer(QWidget):
 
     def setActive(self, active: bool):
         self.active = active
+        # self.bar_color = QColor(0, 200, 255)
+
         if not active:
-            self.target_values = [0.0] * self.bar_count
+            # self.bar_color = QColor(100, 100, 100)
+            self.target_values = [0.02] * self.bar_count
 
     def update_animation(self):
         if self.active:
