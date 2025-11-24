@@ -1,12 +1,16 @@
-from src.stt.deepgram_stt import DeepGramSTT
-import asyncio
+import sys
 from dotenv import load_dotenv
+from PyQt6.QtWidgets import QApplication
+
+from src.ui.main import MainWindow
 
 load_dotenv()
 
 if __name__ == "__main__":
     try:
-        stt = DeepGramSTT()
-        asyncio.run(stt.start())
+        app = QApplication(sys.argv)
+        w = MainWindow()
+        w.show()
+        sys.exit(app.exec())
     except KeyboardInterrupt:
         print("\n👋 Exiting")

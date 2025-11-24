@@ -16,5 +16,8 @@
 		"PULSE_COOKIE": "/root/.config/pulse/cookie"
 	},
 	// REMOVED: "--device=/dev/snd" (Not needed for Bluetooth/Pulse)
-	"runArgs": []
+	"runArgs": [],
+	// "features": {
+	// 	"desktop-lite": "latest"
+	// }
 }
