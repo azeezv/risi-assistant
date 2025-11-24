@@ -11,7 +11,7 @@ RUN apt-get update && apt-get install -y \
 RUN echo "pcm.default type pulse\nctl.default type pulse" > /etc/asound.conf
 
 RUN pip install --no-cache-dir \
-    sounddevice soundfile scipy numpy python-dotenv deepgram-sdk
+    sounddevice soundfile scipy numpy python-dotenv deepgram-sdk PyQt6
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1

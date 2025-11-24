@@ -7,7 +7,6 @@ print(sd.query_devices())
 
 # 1. Force the 'default' device (which routes to Pulse -> Bluetooth)
 # We don't use the index anymore, we use the string name.
-sd.default.device = 'pulse' 
 
 sr = 44100
 t = np.linspace(0, 1, sr)
