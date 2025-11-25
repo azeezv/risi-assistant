@@ -6,7 +6,7 @@ from deepgram.core.events import EventType
 from deepgram.extensions.types.sockets import ListenV2SocketClientResponse
 from src.lib.mic_stream import MicStream
 
-class DeepGramSTT:
+class DeepGramSTT():
     def __init__(self):
         self.client = AsyncDeepgramClient(api_key=os.getenv("DEEPGRAM_API_KEY"))
         self.connection = None
