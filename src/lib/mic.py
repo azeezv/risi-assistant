@@ -20,8 +20,16 @@ class MicWorker(QObject):
 
     def get_sample_rate(self):
         default_device = sd.default.device
-        info: Dict[str, Any] = sd.query_devices(default_device[1], 'output')
-        return int(info['default_samplerate'])
+        if isinstance(default_device, (list, tuple)):
+            input_index = default_device[0]
+        else:
+            input_index = default_device
+        try:
+            info: Dict[str, Any] = sd.query_devices(input_index, 'input')
+            return int(info['default_samplerate'])
+        except Exception:
+            # Fallback to a common sample rate
+            return 16000
 
     def resample_audio(self, indata, to=16000) -> np.ndarray:
         return resample_poly(indata[:, 0], to, self.sample_rate)
@@ -48,7 +56,7 @@ class MicWorker(QObject):
             # The stream lives entirely inside this thread
             with sd.InputStream(
                 channels=1,
-                samplerate=16000,
+                samplerate=self.sample_rate,
                 blocksize=512,
                 callback=callback
             ):

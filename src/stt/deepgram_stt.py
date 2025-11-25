@@ -33,12 +33,14 @@ class DeepGramSTT():
             await listen_task
 
     def on_transcript(self, msg: ListenV2SocketClientResponse):
-        print("Received message:", msg)
         if hasattr(msg, "transcript") and msg.transcript: # type: ignore
             print("🗣️", msg.transcript) # type: ignore
 
     async def _send_audio(self, chunk):
         if self.connection:
+            # Use the public send_media helper which will route binary audio
+            # to the websocket correctly.
+            # await self.connection.send_media(chunk)
             await self.connection._send(chunk)
 
     def process_audio_chunk(self, chunk):
