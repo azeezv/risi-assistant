@@ -1,5 +1,7 @@
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QPushButton
 from PyQt6.QtCore import QThread
+from src.lib.async_qt import AsyncQtThread, AsyncQtWorker
+from src.stt.deepgram_stt import DeepGramSTT
 from src.ui.text_display import TextDisplay
 from src.ui.voice_visualizer import VoiceVisualizer
 from src.lib.mic import MicThread
@@ -35,6 +37,8 @@ class MainWindow(QWidget):
         layout.addWidget(self.toggle_btn)
 
         self.mic_thread = None
+        self.stt_service = DeepGramSTT()
+        self.stt_thread = AsyncQtThread(self.stt_service.start())
 
     def toggle_mic(self, checked):
         if checked:
@@ -50,9 +54,10 @@ class MainWindow(QWidget):
         # connect signals
         assert self.mic_thread.worker is not None
         self.mic_thread.worker.volume_signal.connect(self.process_volume)
-        self.mic_thread.worker.voice_signal.connect(self.process_voice)
+        self.mic_thread.worker.voice_signal.connect(self.stt_service.process_audio_chunk)
         
         self.mic_thread.start()
+        self.stt_thread.start()
 
     def stop_mic(self):
         assert self.mic_thread is not None
@@ -66,9 +71,9 @@ class MainWindow(QWidget):
         # if voice -> animate
         self.visualizer.setActive(vol > 0.01)
 
-    def process_voice(self, indata: np.ndarray):
-        # if voice -> animate
-        print("Voice data received:", indata)
+    # def process_voice(self, indata: np.ndarray):
+    #     # if voice -> animate
+    #     print("Voice data received:", indata)
 
 
         
