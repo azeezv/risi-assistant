@@ -1,5 +1,6 @@
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QPushButton
-from PyQt6.QtCore import QThread
+from PyQt6.QtCore import QThread, QObject, pyqtSignal
+from PyQt6.QtGui import QColor
 from src.lib.async_qt import AsyncQtThread, AsyncQtWorker
 from src.stt.deepgram_stt import DeepGramSTT
 from src.ui.text_display import TextDisplay
@@ -37,7 +38,17 @@ class MainWindow(QWidget):
         layout.addWidget(self.toggle_btn)
 
         self.mic_thread = None
-        self.stt_service = DeepGramSTT()
+
+        # Transcript emitter lives in the main (GUI) thread. DeepGramSTT will
+        # emit `transcript` from the async thread and Qt will queue the signal
+        # back to the GUI thread safely.
+        class TranscriptEmitter(QObject):
+            transcript = pyqtSignal(str)
+
+        self.transcript_emitter = TranscriptEmitter()
+        self.transcript_emitter.transcript.connect(self.on_transcript_received)
+
+        self.stt_service = DeepGramSTT(emitter=self.transcript_emitter)
         self.stt_thread = AsyncQtThread(self.stt_service.start())
 
     def toggle_mic(self, checked):
@@ -68,12 +79,12 @@ class MainWindow(QWidget):
         self.visualizer.setActive(False)
 
     def process_volume(self, vol):
-        # if voice -> animate
         self.visualizer.setActive(vol > 0.01)
 
-    # def process_voice(self, indata: np.ndarray):
-    #     # if voice -> animate
-    #     print("Voice data received:", indata)
+    def on_transcript_received(self, text: str):
+        # Update the TextDisplay with the transcript. Use the configured
+        # font color for consistency.
+        self.text_display.set_text(text, QColor(220, 220, 230))
 
 
         
