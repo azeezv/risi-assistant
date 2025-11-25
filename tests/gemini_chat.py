@@ -24,7 +24,7 @@ if __name__ == "__main__":
         # Quick test message
         messages = [{"role": "user", "content": "Hello Gemini — please reply briefly which tools are  availble to you."}]
         try:
-            resp = llm.chat(messages)
+            resp = llm.inference("Hello, Are you there?", system_prompt="You are a helpful assistant.")
             print("Gemini response:\n", resp)
         except Exception as e:
             print("Error running GeminiProvider.chat:", e)

@@ -1,12 +1,12 @@
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QPushButton
-from PyQt6.QtCore import QThread, QObject, pyqtSignal
+from PyQt6.QtCore import QObject, pyqtSignal
 from PyQt6.QtGui import QColor
-from src.lib.async_qt import AsyncQtThread, AsyncQtWorker
+
+from src.lib.async_qt import AsyncQtThread
 from src.stt.deepgram_stt import DeepGramSTT
 from src.ui.text_display import TextDisplay
 from src.ui.voice_visualizer import VoiceVisualizer
 from src.lib.mic import MicThread
-import numpy as np
 
 class MainWindow(QWidget):
     def __init__(self):
@@ -26,7 +26,7 @@ class MainWindow(QWidget):
 
         # --- TEXT LABEL BELOW VISUALIZER ---
         self.text_display = TextDisplay(self)
-        self.text_display.append_word("Press 'Start Mic' to begin...Press 'Start Mic' to begin...Press 'Start Mic' to begin...Press 'Start Mic' to begin...Press 'Start Mic' to begin...Press 'Start Mic' to begin...Press 'Start Mic' to begin...")
+        self.text_display.append_word(".")
         
         # --- RECORD BTN ---
         self.toggle_btn = QPushButton("Start Mic")
