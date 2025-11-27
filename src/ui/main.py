@@ -39,6 +39,9 @@ class MainWindow(QWidget):
 
         self.mic_thread = None
 
+        # Track the current full instruction text for LLM processing
+        self.current_instruction = ""
+
         # Transcript emitter lives in the main (GUI) thread. DeepGramSTT will
         # emit `transcript` from the async thread and Qt will queue the signal
         # back to the GUI thread safely.
@@ -60,12 +63,16 @@ class MainWindow(QWidget):
             self.stop_mic()
 
     def start_mic(self):
-        self.mic_thread = MicThread(noise_floor=0.0095, sensitivity=40)
+        self.mic_thread = MicThread(noise_floor=0.0095, sensitivity=40, silence_duration_sec=2.0)
+        
+        # Reset instruction state
+        self.current_instruction = ""
         
         # connect signals
         assert self.mic_thread.worker is not None
         self.mic_thread.worker.volume_signal.connect(self.process_volume)
         self.mic_thread.worker.voice_signal.connect(self.stt_service.process_audio_chunk)
+        self.mic_thread.worker.silence_signal.connect(self.on_silence_detected)
         
         self.mic_thread.start()
         self.stt_thread.start()
@@ -84,7 +91,23 @@ class MainWindow(QWidget):
     def on_transcript_received(self, text: str):
         # Update the TextDisplay with the transcript. Use the configured
         # font color for consistency.
+        self.current_instruction = text
         self.text_display.set_text(text, QColor(220, 220, 230))
+
+    def on_silence_detected(self):
+        """Called when user stops speaking for > 3 seconds. Send instruction to LLM."""
+        if self.current_instruction.strip():
+            print(f"🎯 Instruction ready for LLM: {self.current_instruction}")
+            self.send_to_llm(self.current_instruction)
+            # Reset for next instruction
+            self.current_instruction = ""
+
+    def send_to_llm(self, instruction: str):
+        """Process the instruction with an LLM. Placeholder for now."""
+        # TODO: implement LLM integration (e.g., Gemini API call)
+        print(f"Sending to LLM: {instruction}")
+        # For now, just update UI with a placeholder response
+        self.text_display.set_text(f"Processing: {instruction}...", QColor(200, 200, 255))
 
 
         

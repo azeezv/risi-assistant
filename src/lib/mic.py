@@ -5,18 +5,26 @@ import sounddevice as sd
 
 from PyQt6.QtCore import QObject, QThread, pyqtSignal, pyqtSlot
 from scipy.signal import resample_poly
+from src.lib.silence_detector import SilenceDetector
 
 class MicWorker(QObject):
     volume_signal = pyqtSignal(float)
     voice_signal = pyqtSignal(np.ndarray)
+    silence_signal = pyqtSignal()  # Emitted when silence > threshold
     finished = pyqtSignal()
 
-    def __init__(self, noise_floor=0.02, sensitivity=40):
+    def __init__(self, noise_floor=0.02, sensitivity=40, silence_duration_sec=2.0):
         super().__init__()
         self.noise_floor = noise_floor
         self.sensitivity = sensitivity
+        self.silence_duration_sec = silence_duration_sec
         self.running = False
         self.sample_rate = self.get_sample_rate()
+        self.silence_detector = SilenceDetector(
+            silence_duration_sec=silence_duration_sec,
+            rms_threshold=noise_floor
+        )
+        self.silence_detector.set_silence_callback(self._on_silence)
 
     def get_sample_rate(self):
         default_device = sd.default.device
@@ -34,6 +42,10 @@ class MicWorker(QObject):
     def resample_audio(self, indata, to=16000) -> np.ndarray:
         return resample_poly(indata[:, 0], to, self.sample_rate)
 
+    def _on_silence(self):
+        """Called by SilenceDetector when silence is detected. Emit Qt signal."""
+        self.silence_signal.emit()
+
     @pyqtSlot()
     def run(self):
         self.running = True
@@ -48,6 +60,9 @@ class MicWorker(QObject):
             vol = min(1.0, vol * self.sensitivity)
 
             resampled = self.resample_audio(indata)
+
+            # Check for silence (for turn-taking/instruction boundaries)
+            self.silence_detector.process_chunk(resampled)
 
             self.volume_signal.emit(vol)
             self.voice_signal.emit(resampled)
@@ -73,9 +88,9 @@ class MicWorker(QObject):
 
 
 class MicThread():
-    def __init__(self, noise_floor=0.02, sensitivity=40):
+    def __init__(self, noise_floor=0.02, sensitivity=40, silence_duration_sec=3.0):
         self.thread = QThread()
-        self.worker = MicWorker(noise_floor=noise_floor, sensitivity=sensitivity)
+        self.worker = MicWorker(noise_floor=noise_floor, sensitivity=sensitivity, silence_duration_sec=silence_duration_sec)
         self.worker.moveToThread(self.thread)
         
         # signals
