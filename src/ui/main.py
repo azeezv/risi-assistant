@@ -7,6 +7,7 @@ from src.stt.deepgram_stt import DeepGramSTT
 from src.ui.text_display import TextDisplay
 from src.ui.voice_visualizer import VoiceVisualizer
 from src.lib.mic import MicThread
+from src.agents.router.engine import RouterAgent
 
 class MainWindow(QWidget):
     def __init__(self):
@@ -95,19 +96,27 @@ class MainWindow(QWidget):
         self.text_display.set_text(text, QColor(220, 220, 230))
 
     def on_silence_detected(self):
-        """Called when user stops speaking for > 3 seconds. Send instruction to LLM."""
+        """Called when user stops speaking for > 2 seconds. Send instruction to LLM."""
         if self.current_instruction.strip():
+            # Pause mic to prevent AI response from being picked up
+            self.stop_mic()
+            
             print(f"🎯 Instruction ready for LLM: {self.current_instruction}")
             self.send_to_llm(self.current_instruction)
             # Reset for next instruction
             self.current_instruction = ""
 
     def send_to_llm(self, instruction: str):
-        """Process the instruction with an LLM. Placeholder for now."""
-        # TODO: implement LLM integration (e.g., Gemini API call)
+        """Process the instruction with an LLM and auto-restart mic after TTS finishes."""
         print(f"Sending to LLM: {instruction}")
-        # For now, just update UI with a placeholder response
+        # Update UI with processing status
         self.text_display.set_text(f"Processing: {instruction}...", QColor(200, 200, 255))
+        router = RouterAgent()
+        router.run(instruction)
+        
+        # Auto-restart mic after LLM/TTS completes
+        # Toggle the button to trigger start_mic
+        self.start_mic()
 
 
         

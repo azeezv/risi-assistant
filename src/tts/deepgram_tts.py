@@ -1,4 +1,3 @@
-import asyncio
 import os
 import numpy as np
 from deepgram import DeepgramClient

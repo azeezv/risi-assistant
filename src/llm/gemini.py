@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, cast, Union
+from typing import Any, Dict, List, Union
 from google.genai import Client as geminiClient, types
 import os
 
@@ -33,14 +33,14 @@ class GeminiProvider(BaseProvider):
         text: str, 
         system_prompt: str = "", 
         tools: List[Dict[str, Any]] | None = None,
-    ) -> Union[str, Dict[str, Any]]:        
+    ) -> str:        
     
         config = types.GenerateContentConfig(
-            tools=tools,
             safety_settings=[],
             system_instruction=system_prompt,
-            response_mime_type="application/json" , 
+            response_mime_type="application/json",
         )
+        # Note: tools parameter is ignored - no function calling, pure JSON response
 
         # 2. Make the API Call
         resp = self.client.models.generate_content(
@@ -49,7 +49,7 @@ class GeminiProvider(BaseProvider):
             config=config,
         )
 
-        # 3. Parse Response (Handle both Tools and Text)
+        # 3. Parse Response - return the JSON text directly
         candidates = getattr(resp, "candidates", []) or []
         if not candidates:
             return ""
@@ -59,16 +59,6 @@ class GeminiProvider(BaseProvider):
         parts = getattr(content, "parts", []) or []
 
         for part in parts:
-            # CASE A: Native Function Call (Executor Agent)
-            # We convert the special object into a standard Python Dictionary
-            fn = getattr(part, "function_call", None)
-            if fn:
-                return {
-                    "tool_name": fn.name,
-                    "tool_args": dict(fn.args)
-                }
-            
-            # CASE B: Text / JSON String (Router Agent or Standard Chat)
             txt = getattr(part, "text", None)
             if txt:
                 return txt

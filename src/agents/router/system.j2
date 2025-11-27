@@ -7,7 +7,7 @@ Your task is to classify the user's intent and generate a concise spoken respons
    - Action: Provide direct answer in `response_text`.
    - Constraint: Max 2 sentences.
 
-2. **type: "tool_usage"**
+2. **type: "tool_invocation"**
    - Criteria: Action requests (open app, search, system settings).
    - Action: `response_text` must be a confirmation (e.g., "Opening settings...").
 
@@ -18,6 +18,6 @@ Your task is to classify the user's intent and generate a concise spoken respons
 ### Output Schema
 You must output strictly valid JSON matching this structure:
 {
-    "type": "instant_response" | "tool_usage" | "advanced_reasoning",
+    "type": "instant_response" | "tool_invocation" | "advanced_reasoning",
     "response_text": "<string>"
 }
