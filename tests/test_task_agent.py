@@ -18,9 +18,12 @@ def main():
     
     # Example tasks:
     tasks = [
+        "What OS system uses? which version ?",
+        "How many users are there in the system ?",
+        "Can you find whats the system time is ?",
+        "Create a folder called 'my_folder' and verify it exists",
         "Create a file called 'test.txt' in the current directory with the content 'Hello World'",
         "List all Python files in the src directory",
-        "Create a folder called 'my_folder' and verify it exists",
     ]
     
     # Execute a task
