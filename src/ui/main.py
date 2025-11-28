@@ -8,6 +8,7 @@ from src.ui.text_display import TextDisplay
 from src.ui.voice_visualizer import VoiceVisualizer
 from src.lib.mic import MicThread
 from src.agents.router.engine import RouterAgent
+from src.lib.conversation_history import ConversationHistory
 
 class MainWindow(QWidget):
     def __init__(self):
@@ -42,6 +43,9 @@ class MainWindow(QWidget):
 
         # Track the current full instruction text for LLM processing
         self.current_instruction = ""
+        
+        # Initialize conversation history to maintain context
+        self.conversation_history = ConversationHistory(max_exchanges=20)
 
         # Transcript emitter lives in the main (GUI) thread. DeepGramSTT will
         # emit `transcript` from the async thread and Qt will queue the signal
@@ -64,7 +68,7 @@ class MainWindow(QWidget):
             self.stop_mic()
 
     def start_mic(self):
-        self.mic_thread = MicThread(noise_floor=0.0095, sensitivity=40, silence_duration_sec=2.0)
+        self.mic_thread = MicThread(noise_floor=0.0095, sensitivity=40, silence_duration_sec=1.0)
         
         # Reset instruction state
         self.current_instruction = ""
@@ -111,11 +115,19 @@ class MainWindow(QWidget):
         print(f"Sending to LLM: {instruction}")
         # Update UI with processing status
         self.text_display.set_text(f"Processing: {instruction}...", QColor(200, 200, 255))
+        
+        # Add user message to history
+        self.conversation_history.add_user_message(instruction)
+        
+        # Pass conversation history and instruction to router
         router = RouterAgent()
-        router.run(instruction)
+        response = router.run(instruction, history=self.conversation_history.get_messages())
+        
+        # Add assistant response to history (if available)
+        if response:
+            self.conversation_history.add_assistant_message(response)
         
         # Auto-restart mic after LLM/TTS completes
-        # Toggle the button to trigger start_mic
         self.start_mic()
 
 
