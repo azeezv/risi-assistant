@@ -1,6 +1,6 @@
 import jinja2
 import json
-from typing import Any, Dict, List, Optional
+from typing import Dict, List, Optional
 from src.llm.gemini import GeminiProvider
 from src.tts.deepgram_tts import DeepGramTTS
 
@@ -31,6 +31,8 @@ class RouterAgent:
             full_text = instruction
             if context_text:
                 full_text = f"Conversation history:\n{context_text}\nCurrent message: {instruction}"
+
+            print(f"RouterAgent sending to LLM:\n{full_text}")
             
             response = self.llm.inference(
                 text=full_text,
