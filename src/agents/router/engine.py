@@ -5,6 +5,7 @@ from src.llm.gemini import GeminiProvider
 from src.tts.deepgram_tts import DeepGramTTS
 from src.agents.task.engine import TaskAgent
 from src.agents.reasoner.engine import ReasoningAgent
+import threading
 
 env = jinja2.Environment(loader=jinja2.PackageLoader("src.agents.router", ""))
 template = env.get_template("system.j2")
@@ -49,12 +50,14 @@ class RouterAgent:
 
             print(jsonData)
 
-            response_text = ""
+            response_text = jsonData.get("response_text")
+            
             if type == "instant_response":
-                response_text = jsonData.get("response_text", "")
                 if response_text:
                     self.tts_service.speak(response_text)
             elif type == "tool_invocation":
+                threading.Thread(target=self.tts_service.speak, args=(response_text,), daemon=True).start()
+
                 # Expect either a direct instruction for the task agent, or explicit tool_name/args
                 tool_name = jsonData.get("tool_name")
                 tool_args = jsonData.get("tool_args")
@@ -87,6 +90,8 @@ class RouterAgent:
                     self.tts_service.speak(response_text)
 
             elif type == "advanced_reasoning":
+                threading.Thread(target=self.tts_service.speak, args=(response_text,), daemon=True).start()
+                
                 # Advanced reasoning: pass the query to ReasoningAgent and use dual outputs
                 reasoning_query = jsonData.get("query") or jsonData.get("instruction") or full_text
                 try:

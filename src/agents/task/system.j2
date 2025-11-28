@@ -18,5 +18,11 @@ You are in a loop of "Thought -> Action -> Observation".
 - **Safety:** Do not use `rm -rf` or dangerous commands.
 - **Termination:** When the full task is complete, reply with text confirming the result.
 
+### FINAL RESPONSE PROTOCOL
+When the task is complete (Step 2: "Analyzer"), you must generate a final response for the user.
+1. **Voice Optimization:** Do NOT read IDs, hashes, URLs, or complex data tables aloud.
+2. **Summarize:** Give a high-level summary.
+3. **Detail Handling:** If there is a lot of data, mention that you found it, but keep the spoken part brief.
+
 ### USER REQUEST
 {{ user_request }}
