@@ -6,17 +6,36 @@ class AsyncQtWorker(QObject):
     error = pyqtSignal(str)
     finished = pyqtSignal()
 
-    def __init__(self, coro, loop):
+    def __init__(self, coro_or_factory, loop):
         super().__init__()
-        self.coro = coro
+        # coro_or_factory may be either a coroutine object or a callable that
+        # returns a coroutine (factory). We defer creating the coroutine
+        # until we are inside the event loop thread to avoid "never awaited"
+        # warnings when the coroutine is created but never scheduled.
+        self.coro_or_factory = coro_or_factory
         self.loop = loop
         self.task = None
 
     def run(self):
         asyncio.set_event_loop(self.loop)
-        self.task = self.loop.create_task(self.coro)
-        self.task.add_done_callback(self._on_task_done)
-        self.loop.run_forever()
+        try:
+            # If a factory was provided, call it now (inside the thread's loop)
+            if callable(self.coro_or_factory):
+                coro = self.coro_or_factory()
+            else:
+                coro = self.coro_or_factory
+
+            self.task = self.loop.create_task(coro)
+            self.task.add_done_callback(self._on_task_done)
+            self.loop.run_forever()
+        finally:
+            # Ensure all pending tasks are cleaned up
+            pending = asyncio.all_tasks(self.loop)
+            for task in pending:
+                task.cancel()
+            # Run the loop one more time to allow cancellation to complete
+            self.loop.run_until_complete(asyncio.gather(*pending, return_exceptions=True))
+            self.loop.close()
 
     def _on_task_done(self, task):
         try:
@@ -27,6 +46,8 @@ class AsyncQtWorker(QObject):
         except Exception as e:
             self.error.emit(str(e))
         finally:
+            # Stop the event loop after task completes
+            self.loop.call_soon_threadsafe(self.loop.stop)
             self.finished.emit()
 
 class AsyncQtThread:

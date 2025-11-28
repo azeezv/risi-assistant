@@ -57,7 +57,9 @@ class MainWindow(QWidget):
         self.transcript_emitter.transcript.connect(self.on_transcript_received)
 
         self.stt_service = DeepGramSTT(emitter=self.transcript_emitter)
-        self.stt_thread = AsyncQtThread(self.stt_service.start())
+        # Pass the coroutine *factory* (callable) so the coroutine is created
+        # inside the async thread's event loop and not before the thread starts.
+        self.stt_thread = AsyncQtThread(self.stt_service.start)
 
     def toggle_mic(self, checked):
         if checked:
@@ -129,6 +131,22 @@ class MainWindow(QWidget):
         
         # Auto-restart mic after LLM/TTS completes
         self.start_mic()
+
+    def closeEvent(self, event):
+        """Ensure background threads and async loops are stopped on window close."""
+        try:
+            if self.mic_thread is not None:
+                self.stop_mic()
+        except Exception:
+            pass
+
+        try:
+            if hasattr(self, 'stt_thread') and self.stt_thread is not None:
+                self.stt_thread.stop()
+        except Exception:
+            pass
+
+        super().closeEvent(event)
 
 
         
