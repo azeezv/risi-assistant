@@ -1,5 +1,4 @@
 import os
-import numpy as np
 from deepgram import DeepgramClient
 from src.tts.base import BaseTTS
 
@@ -10,8 +9,9 @@ from io import BytesIO
 class DeepGramTTS(BaseTTS):
     def __init__(self):
         self.client = DeepgramClient(api_key=os.getenv("DEEPGRAM_API_KEY"))
-
-    def tts(self, text):
+    
+    def speak(self, text):
+        
         chunks = []
         for chunk in self.client.speak.v1.audio.generate(
             text=text,
@@ -20,11 +20,8 @@ class DeepGramTTS(BaseTTS):
             container="wav",
         ):
             chunks.append(chunk)
-        return b"".join(chunks)
-    
-    def speak(self, text):
-        
-        audio_bytes = self.tts(text)
+
+        audio_bytes =  b"".join(chunks)
 
         try:
             data, samplerate = sf.read(BytesIO(audio_bytes), dtype="float32")

@@ -9,15 +9,6 @@ class BaseTTS:
     """
     
     name: str
-
-    def tts(self, text: str) -> Any:
-        """
-        High-level TTS method:
-        - takes a plain text string
-        - generates speech via underlying model
-        - returns audio (numpy array, bytes, or file path)
-        """
-        raise NotImplementedError
     
     def speak(self, text: str) -> Any:
         """
