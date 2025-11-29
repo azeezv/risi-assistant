@@ -7,7 +7,7 @@ from src.stt.deepgram_stt import DeepGramSTT
 from src.ui.text_display import TextDisplay
 from src.ui.voice_visualizer import VoiceVisualizer
 from src.lib.mic import MicThread
-from src.agents.router.engine import RouterAgent
+from src.agents.router import RouterAgent
 from src.lib.conversation_history import ConversationHistory
 
 class MainWindow(QWidget):

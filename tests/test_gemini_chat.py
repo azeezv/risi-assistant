@@ -5,7 +5,7 @@ import os
 # running this script directly.
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from src.llm.gemini import GeminiProvider
+from src.llm import GeminiProvider
 from dotenv import load_dotenv
 
 load_dotenv()
