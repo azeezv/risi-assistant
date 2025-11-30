@@ -23,17 +23,17 @@ class MainWindow(QWidget):
         # --- UI COMPONENTS ---
         self.visualizer = VoiceVisualizer(self, bar_count=42)
         self.text_display = TextDisplay(self, QColor(15, 15, 30))
-        self.content_area_ui = ContentArea(self, 220, 600)
+        self.content_area_ui = ContentArea(self, 220, 800)
         self.toggle_btn = RecordButton(
             "Start Mic", 
             self.start_mic, 
             self.stop_mic
         )
 
-        layout.addWidget(self.visualizer)
-        layout.addWidget(self.text_display)
-        layout.addWidget(self.content_area_ui)
-        layout.addWidget(self.toggle_btn)
+        layout.addWidget(self.visualizer, 0)
+        layout.addWidget(self.text_display, 0)
+        layout.addWidget(self.content_area_ui, 1)
+        layout.addWidget(self.toggle_btn, 0)
 
         self.mic_thread = None
 

@@ -25,9 +25,9 @@ class ContentArea(QWidget):
         self.content_area = QTextBrowser(self)
         self.content_area.setOpenExternalLinks(True)
         # Make it look clean (no border)
-        self.content_area.setStyleSheet("border: none; background-color: #f0f;") 
+        self.content_area.setStyleSheet("border: none; background-color: transparent;") 
         
-        self.close_btn = QPushButton("✕ Close")
+        self.close_btn = QPushButton("X Close")
         self.close_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         self.close_btn.setMaximumWidth(80)
         self.close_btn.setFixedHeight(25)
