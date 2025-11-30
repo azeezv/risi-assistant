@@ -1,15 +1,12 @@
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QPushButton
+from PyQt6.QtWidgets import QWidget, QVBoxLayout
 from PyQt6.QtCore import QObject, pyqtSignal
 from PyQt6.QtGui import QColor
-
-from src.lib.async_qt import AsyncQtThread
-from src.lib.mic import MicThread
-from src.lib.conversation_history import ConversationHistory
 
 from src.stt.deepgram_stt import DeepGramSTT
 from src.agents.router import RouterAgent
 
-from src.ui import TextDisplay, VoiceVisualizer, ContentArea
+from src.lib import AsyncQtThread, MicThread, ConversationHistory
+from src.ui import TextDisplay, VoiceVisualizer, ContentArea, RecordButton
 
 class MainWindow(QWidget):
     def __init__(self):
@@ -23,21 +20,15 @@ class MainWindow(QWidget):
         layout.setSpacing(0)
         layout.setContentsMargins(0, 0, 0, 0)
 
-        # --- VISUALIZER ---
-        self.visualizer = VoiceVisualizer(self, bar_count=24)
-        self.visualizer.setMinimumHeight(120)
-
-        # --- CHAT TEXT DISPLAY AREA ---
-        self.text_display = TextDisplay(self)
-        self.text_display.append_word(".")
-
-        # --- REASONING CONNTENT ---
-        self.content_area_ui = ContentArea(220, 600)
-        
-        # --- RECORD BTN ---
-        self.toggle_btn = QPushButton("Start Mic")
-        self.toggle_btn.setCheckable(True)
-        self.toggle_btn.toggled.connect(self.toggle_mic)
+        # --- UI COMPONENTS ---
+        self.visualizer = VoiceVisualizer(self, bar_count=42)
+        self.text_display = TextDisplay(self, QColor(15, 15, 30))
+        self.content_area_ui = ContentArea(self, 220, 600)
+        self.toggle_btn = RecordButton(
+            "Start Mic", 
+            self.start_mic, 
+            self.stop_mic
+        )
 
         layout.addWidget(self.visualizer)
         layout.addWidget(self.text_display)
@@ -65,14 +56,6 @@ class MainWindow(QWidget):
         # Pass the coroutine *factory* (callable) so the coroutine is created
         # inside the async thread's event loop and not before the thread starts.
         self.stt_thread = AsyncQtThread(self.stt_service.start)
-
-    def toggle_mic(self, checked):
-        if checked:
-            self.toggle_btn.setText("Stop Mic")
-            self.start_mic()
-        else:
-            self.toggle_btn.setText("Start Mic")
-            self.stop_mic()
 
     def start_mic(self):
         self.mic_thread = MicThread(noise_floor=0.0095, sensitivity=40, silence_duration_sec=1.0)

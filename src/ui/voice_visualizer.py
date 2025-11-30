@@ -4,7 +4,12 @@ from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtWidgets import QWidget
 
 class VoiceVisualizer(QWidget):
-    def __init__(self, parent=None, bar_count=20):
+    def __init__(
+            self, 
+            parent = None, 
+            bar_count = 20,
+        ):
+
         super().__init__(parent)
         self.bar_count = bar_count
         self.values = [0.0] * bar_count
@@ -17,6 +22,8 @@ class VoiceVisualizer(QWidget):
 
         self.bar_color = QColor(0, 200, 255)
         self.background = QColor(15, 15, 30)
+
+        self.setMinimumHeight(120)
 
     def setActive(self, active: bool):
         self.active = active

@@ -4,7 +4,7 @@ from markdown import markdown
 from PyQt6.QtCore import Qt
 
 class ContentArea(QWidget):
-    def __init__(self, compact_height, expanded_height):
+    def __init__(self, parent = None, compact_height, expanded_height):
         super().__init__()
         
         # 1. Setup Data
@@ -20,7 +20,7 @@ class ContentArea(QWidget):
         self.content_area = QTextBrowser(self)
         self.content_area.setOpenExternalLinks(True)
         # Make it look clean (no border)
-        self.content_area.setStyleSheet("border: none; background-color: transparent;") 
+        self.content_area.setStyleSheet("border: none; background-color: #f0f;") 
         
         self.close_btn = QPushButton("✕ Close")
         self.close_btn.setCursor(Qt.CursorShape.PointingHandCursor)
@@ -44,6 +44,8 @@ class ContentArea(QWidget):
     def set_content_area_markdown(self, md_text: str):
         """Set text and trigger expansion."""
         html = markdown(md_text, extensions=['fenced_code', 'tables'])
+        print(html)
+        html = self.addHtmlStyle(html)
         self.content_area.setHtml(html)
         
         # Only animate if we are currently hidden
@@ -88,3 +90,23 @@ class ContentArea(QWidget):
         
         self.animation.setEndValue(new_geom)
         self.animation.start()
+    
+    def addHtmlStyle(self, html: str):
+        css_style = """
+            <style>
+                pre {
+                    background-color: #2d2d2d; /* Dark Gray Background */
+                    color: #f8f8f2;            /* Light White Text */
+                    padding: 10px;             /* Space inside the block */
+                    border-radius: 4px;        /* Rounded corners (Qt support varies) */
+                    font-family: Consolas, Monaco, "Courier New", monospace;
+                }
+                code {
+                    color: #f8f8f2;            /* Ensure text color applies to code tag */
+                }
+                /* Optional: Style links or other text if needed */
+                a { color: #8BE9FD; }
+            </style>
+            """
+        
+        return css_style + html

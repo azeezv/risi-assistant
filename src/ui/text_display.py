@@ -10,7 +10,7 @@ class TextCanvas(QWidget):
         self.background = background
         self.font_color = font_color
 
-        self.setMinimumHeight(50)
+        self.setFixedHeight(50)
         self.setSizePolicy(QSizePolicy.Policy.Expanding,
                            QSizePolicy.Policy.Fixed)
 
@@ -48,7 +48,7 @@ class TextCanvas(QWidget):
 
 class TextDisplay(QScrollArea):
     """Fully scrollable text widget with custom painting."""
-    def __init__(self, parent=None, background=QColor(15, 15, 30)):
+    def __init__(self, parent=None, background):
         super().__init__(parent)
 
         self.background = background
