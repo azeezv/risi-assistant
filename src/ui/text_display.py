@@ -48,7 +48,7 @@ class TextCanvas(QWidget):
 
 class TextDisplay(QScrollArea):
     """Fully scrollable text widget with custom painting."""
-    def __init__(self, parent=None, background):
+    def __init__(self, parent=None, background=QColor(15, 15, 30)):
         super().__init__(parent)
 
         self.background = background

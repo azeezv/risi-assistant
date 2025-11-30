@@ -4,19 +4,25 @@ from markdown import markdown
 from PyQt6.QtCore import Qt
 
 class ContentArea(QWidget):
-    def __init__(self, parent = None, compact_height, expanded_height):
-        super().__init__()
+    def __init__(
+            self, 
+            parent = None, 
+            compact_height = 100, 
+            expanded_height = 150
+            
+        ):
+        super().__init__(parent)
         
-        # 1. Setup Data
+        # Setup Data
         self.compact_height = compact_height
         self.expanded_height = expanded_height
 
-        # 2. Setup Layouts
+        # Setup Layouts
         self.content_layout = QVBoxLayout()
         self.content_layout.setSpacing(5)
         self.content_layout.setContentsMargins(10, 5, 10, 10) # Added margin for looks
 
-        # 3. Setup Components
+        # Setup Components
         self.content_area = QTextBrowser(self)
         self.content_area.setOpenExternalLinks(True)
         # Make it look clean (no border)
@@ -32,7 +38,7 @@ class ContentArea(QWidget):
         self.content_header.addStretch()
         self.content_header.addWidget(self.close_btn)
 
-        # 4. CRITICAL FIX: Add items to the main layout
+        # Add items to the main layout
         self.content_layout.addLayout(self.content_header)
         self.content_layout.addWidget(self.content_area)
 
