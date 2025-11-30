@@ -41,7 +41,7 @@ class RouterAgent:
             print(f"RouterAgent sending to LLM:\n{full_text}")
             
             response = self.llm.inference(
-                text=full_text,
+                contents=full_text,
                 system_prompt=self.system_prompt
             )
 

@@ -36,7 +36,7 @@ class ReasoningAgent:
         print("🤔 Analyzing problem...")
         
         response = self.llm.inference(
-            text=query,
+            contents=query,
             system_prompt=self.system_prompt
         )
         

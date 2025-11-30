@@ -12,7 +12,7 @@ class LLMProvider():
     def __init__(self, provider: str, model: Optional[str] = None):
         
         ProviderClass = LLM_PROVIDER_MAP[provider]
-        
+
         self.llm = ProviderClass(model=model)
 
     @property

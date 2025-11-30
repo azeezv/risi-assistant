@@ -12,6 +12,8 @@ x = LLMProvider(
     model="models/gemini-2.5-flash"
 )
 
+print(x.tools)
+
 contents = x.build_content(
 [{
     "role": "user",
