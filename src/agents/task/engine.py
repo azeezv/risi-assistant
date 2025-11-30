@@ -48,10 +48,13 @@ class TaskAgent:
 
             contents = self.llm.model.build_content(chat_history.messages)
 
+            print(contents)
+
             response = self.llm.model.inference(
                 contents = contents,
                 system_prompt = self.system_prompt
             )
+
             
             # === PATH 1: AGENT WANTS TO USE A TOOL ===
 

@@ -21,12 +21,12 @@ def main():
     
     # Example tasks:
     tasks = [
+        "What OS system uses? which version ?",
+        "List all Python files in the src directory",
         "Can you find whats the system time is ?",
         "How many users are there in the system ?",
-        "What OS system uses? which version ?",
         "Create a folder called 'my_folder' and verify it exists",
         "Create a file called 'test.txt' in the current directory with the content 'Hello World'",
-        "List all Python files in the src directory",
     ]
     
     # Execute a task

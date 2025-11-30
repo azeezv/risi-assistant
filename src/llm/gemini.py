@@ -76,8 +76,6 @@ class GeminiProvider(BaseProvider):
         else:
             _contents = contents
 
-        print(self.model)
-        print(config)
         response = self.client.models.generate_content(
             model=self.model,
             contents=_contents,
@@ -96,10 +94,10 @@ class GeminiProvider(BaseProvider):
         
         content = getattr(model_candidate, "content", None)
         parts = getattr(content, "parts", []) or []
-        print("------> ", parts)
 
         for part in parts:
-            txt = getattr(part, "text", "")
+        
+            txt = getattr(part, "text", "") or "" # this fuck returns None
             text_content += txt
             
             if hasattr(part, "function_call") and part.function_call:
