@@ -8,6 +8,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 
 from src.lib.system_info import SystemInfo
 from src.llm import GeminiProvider
+from src.lib.chat_history import ChatMessage
 from dotenv import load_dotenv
 
 env = jinja2.Environment(loader=jinja2.PackageLoader("src.agents.task", ""))
@@ -37,8 +38,17 @@ if __name__ == "__main__":
             "What is the current operating system and its version?",
         ]
 
+        list_content: list = [
+            {
+                "role": "user",
+                "content": "Which tools you have access to ?"
+            }
+        ]
+
+        contents = GeminiProvider.build_content(list_content)
+
         try:
-            resp = llm.inference(queries[0], system_prompt=sys_prompt)
+            resp = llm.inference(contents, system_prompt=sys_prompt)
             print("Gemini response:\n", resp)
         except Exception as e:
             print("Error running GeminiProvider.chat:", e)

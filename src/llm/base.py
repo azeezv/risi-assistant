@@ -1,10 +1,13 @@
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List
+from typing import Any, Dict, List,Optional
 from src.llm.llm_response import LLMResponse
 from src.lib.chat_history import ChatMessage
 
 class BaseProvider(ABC):
     name: str
+
+    def __init__(self, model: Optional[str] = None):
+        ...
 
     @property
     @abstractmethod
