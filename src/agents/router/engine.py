@@ -11,12 +11,14 @@ env = jinja2.Environment(loader=jinja2.PackageLoader("src.agents.router", ""))
 template = env.get_template("system.j2")
 
 class RouterAgent:
-    def __init__(self):
+    def __init__(self, set_content_area_ui):
         self.llm = GeminiProvider()
         self.tts_service = DeepGramTTS()
         # Instantiate agents
         self.task_agent = TaskAgent()
         self.reasoner = ReasoningAgent()
+
+        self.set_content_area_ui = set_content_area_ui
     
     @property
     def system_prompt(self):
@@ -96,16 +98,16 @@ class RouterAgent:
             elif type == "advanced_reasoning":
                 threading.Thread(target=self.tts_service.speak, args=(response_text,), daemon=True).start()
                 
-                # Advanced reasoning: pass the query to ReasoningAgent and use dual outputs
-                reasoning_query = jsonData.get("query") or jsonData.get("instruction") or full_text
+                reasoning_query = full_text
                 try:
                     reasoning_result = self.reasoner.reason(reasoning_query)
                     # reasoning_result expected: { voice_summary, display_content, raw_response }
                     voice = reasoning_result.get("voice_summary") or "I've completed the analysis."
                     display = reasoning_result.get("display_content") or reasoning_result.get("raw_response", "")
                     # Speak concise voice summary and return the display content
-                    self.tts_service.speak(voice)
-                    response_text = display
+                    # self.tts_service.speak(voice)
+                    threading.Thread(target=self.tts_service.speak, args=(voice,), daemon=True).start()
+                    self.set_content_area_ui(display)
                 except Exception as e:
                     response_text = f"Error during advanced reasoning: {e}"
                     print(response_text)

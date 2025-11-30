@@ -1,15 +1,15 @@
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QTextBrowser
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QPushButton
 from PyQt6.QtCore import QObject, pyqtSignal
 from PyQt6.QtGui import QColor
-from markdown import markdown
 
 from src.lib.async_qt import AsyncQtThread
-from src.stt.deepgram_stt import DeepGramSTT
-from src.ui.text_display import TextDisplay
-from src.ui.voice_visualizer import VoiceVisualizer
 from src.lib.mic import MicThread
-from src.agents.router import RouterAgent
 from src.lib.conversation_history import ConversationHistory
+
+from src.stt.deepgram_stt import DeepGramSTT
+from src.agents.router import RouterAgent
+
+from src.ui import TextDisplay, VoiceVisualizer, ContentArea
 
 class MainWindow(QWidget):
     def __init__(self):
@@ -27,14 +27,12 @@ class MainWindow(QWidget):
         self.visualizer = VoiceVisualizer(self, bar_count=24)
         self.visualizer.setMinimumHeight(120)
 
-        # --- TEXT LABEL BELOW VISUALIZER ---
+        # --- CHAT TEXT DISPLAY AREA ---
         self.text_display = TextDisplay(self)
         self.text_display.append_word(".")
 
-        # --- TEXT LABEL BELOW VISUALIZER ---
-        self.content_area = QTextBrowser(self)
-        self.content_area.setOpenExternalLinks(True)
-        self.content_area.setVisible(False)
+        # --- REASONING CONNTENT ---
+        self.content_area_ui = ContentArea(220, 600)
         
         # --- RECORD BTN ---
         self.toggle_btn = QPushButton("Start Mic")
@@ -43,7 +41,7 @@ class MainWindow(QWidget):
 
         layout.addWidget(self.visualizer)
         layout.addWidget(self.text_display)
-        layout.addWidget(self.content_area)
+        layout.addWidget(self.content_area_ui)
         layout.addWidget(self.toggle_btn)
 
         self.mic_thread = None
@@ -128,7 +126,7 @@ class MainWindow(QWidget):
         self.conversation_history.add_user_message(instruction)
         
         # Pass conversation history and instruction to router
-        router = RouterAgent()
+        router = RouterAgent(self.content_area_ui.set_content_area_markdown)
         response = router.run(instruction, history=self.conversation_history.get_messages())
         
         # Add assistant response to history (if available)
@@ -137,12 +135,6 @@ class MainWindow(QWidget):
         
         # Auto-restart mic after LLM/TTS completes
         self.start_mic()
-
-    def set_content_area_markdown(self, md_text: str):
-        """Set the content area text using markdown formatting."""
-        html = markdown(md_text, extensions=['fenced_code', 'tables'])
-        self.content_area.setHtml(html)
-        self.content_area.setVisible(True)
 
     def closeEvent(self, event):
         """Ensure background threads and async loops are stopped on window close."""
