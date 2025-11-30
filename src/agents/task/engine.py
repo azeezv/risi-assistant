@@ -1,13 +1,9 @@
 import jinja2
 import os
-from google.genai import Client as geminiClient
-from google.genai import types
 
-from src.lib.system_info import SystemInfo
-from src.tools.registry import TOOL_REGISTRY
-from src.tools.run_bash import run_bash
-from src.llm import GeminiProvider
-from src.lib.chat_history import ChatHistory, ChatMessage, ToolCall, ToolResponse
+from src.lib import SystemInfo, ChatHistory
+from src.llm import LLMProvider
+from src.tools import execute_tool
 
 env = jinja2.Environment(loader=jinja2.PackageLoader("src.agents.task", ""))
 template = env.get_template("system.j2")
@@ -18,9 +14,8 @@ class TaskAgent:
     Follows: Analyze → Plan → Act → Verify
     """
     
-    def __init__(self, model: str = "models/gemini-2.5-flash"):
-        self.llm = GeminiProvider(model=model)
-        self.client = geminiClient(api_key=os.environ.get("GEMINI_API_KEY"))
+    def __init__(self):
+        self.llm = LLMProvider("gemini")
         self.max_steps = 15
     
     @property
@@ -51,9 +46,9 @@ class TaskAgent:
             # Call Gemini with tools enabled
             print(f"🤔 Step {step}: Analyzing...")
 
-            contents = self.llm.build_content(chat_history.messages)
+            contents = self.llm.model.build_content(chat_history.messages)
 
-            response = self.llm.inference(
+            response = self.llm.model.inference(
                 contents = contents,
                 system_prompt = self.system_prompt
             )
@@ -73,7 +68,7 @@ class TaskAgent:
                 print(f"⚙️  Step {step}: Executing {tool_name}...")
 
                 try:
-                    result_data = self._execute_tool(tool_name, tool_args)
+                    result_data = execute_tool(tool_name, tool_args)
                 except Exception as e:
                     result_data = {"error": str(e)}
 
@@ -98,11 +93,3 @@ class TaskAgent:
                 return "Error: Unexpected response format from model"
         return f"⚠️ Task exceeded max steps ({self.max_steps}). Stopping."
     
-    def _execute_tool(self, tool_name: str, tool_args: dict) -> dict:
-        """
-        Execute a tool by name.
-        """
-        if tool_name == "run_bash":
-            return run_bash(**tool_args)
-        else:
-            return {"error": f"Tool '{tool_name}' not implemented"}

@@ -16,7 +16,7 @@ class BaseProvider(ABC):
 
     @staticmethod
     @abstractmethod
-    def build_content(chats: List[ChatMessage]):
+    def build_content(chats: List[ChatMessage]) ->  list[Dict[str, Any]]:
         ...
     
     @abstractmethod

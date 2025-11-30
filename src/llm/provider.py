@@ -1,4 +1,4 @@
-from typing import Optional, Type, Dict
+from typing import Optional, Type, Dict, Any, List
 from src.llm.base import BaseProvider
 from src.llm.gemini import GeminiProvider
 
@@ -13,14 +13,5 @@ class LLMProvider():
         
         ProviderClass = LLM_PROVIDER_MAP[provider]
 
-        self.llm = ProviderClass(model=model)
+        self.model = ProviderClass(model=model)
 
-    @property
-    def tools(self):
-        return self.llm.tools
-
-    def build_content(self, chats):
-        return self.llm.build_content(chats)
-
-    def inference(self, contents, system_prompt: str = ""):
-        return self.llm.inference(contents, system_prompt=system_prompt)

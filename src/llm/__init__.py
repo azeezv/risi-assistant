@@ -1,3 +1,3 @@
-from .gemini import GeminiProvider
+from .provider import LLMProvider
 
-__all__ = ["GeminiProvider"]
+__all__ = ["LLMProvider"]

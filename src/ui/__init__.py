@@ -7,5 +7,5 @@ __all__ = [
     "ContentArea",
     "TextDisplay",
     "VoiceVisualizer",
-    "RecordButton"
+    "RecordButton",
 ]

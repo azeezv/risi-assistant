@@ -1,7 +1,7 @@
 import jinja2
 import json
 from typing import Dict, List, Optional
-from src.llm.gemini import GeminiProvider
+from src.llm import LLMProvider
 from src.tts import TTSProvider
 from src.agents.task.engine import TaskAgent
 from src.agents.reasoner.engine import ReasoningAgent
@@ -12,9 +12,9 @@ template = env.get_template("system.j2")
 
 class RouterAgent:
     def __init__(self, set_content_area_ui):
-        self.llm = GeminiProvider()
+        self.llm = LLMProvider("gemini")
         self.tts_service = TTSProvider("piperTTS")
-        
+
         # Instantiate agents
         self.task_agent = TaskAgent()
         self.reasoner = ReasoningAgent()
@@ -43,7 +43,7 @@ class RouterAgent:
 
             print(f"RouterAgent sending to LLM:\n{full_text}")
             
-            response = self.llm.inference(
+            response = self.llm.model.inference(
                 contents=full_text,
                 system_prompt=self.system_prompt
             )

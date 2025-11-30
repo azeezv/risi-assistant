@@ -3,7 +3,7 @@ import json
 from pydantic import BaseModel
 
 from src.lib.system_info import SystemInfo
-from src.llm import GeminiProvider
+from src.llm import LLMProvider
 
 env = jinja2.Environment(loader=jinja2.PackageLoader("src.agents.reasoner", ""))
 template = env.get_template("system.j2")
@@ -22,8 +22,8 @@ class ReasoningAgent:
     2. display_content: Detailed markdown for display
     """
     
-    def __init__(self, model: str = "models/gemini-2.5-flash"):
-        self.llm = GeminiProvider(model=model)
+    def __init__(self):
+        self.llm = LLMProvider("gemini")
 
     @property
     def system_prompt(self) -> str:
@@ -36,11 +36,10 @@ class ReasoningAgent:
     def reason(self, query: str) -> dict:        
         print(f"\n🧠 REASONING: {query}\n")
     
-        # Call Gemini
         print("🤔 Analyzing problem...")
         print(query)
         
-        response = self.llm.inference(
+        response = self.llm.model.inference(
             contents=query,
             system_prompt=self.system_prompt,
             json_mode=True,
