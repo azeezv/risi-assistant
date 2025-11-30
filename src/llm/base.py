@@ -1,17 +1,25 @@
+from abc import ABC, abstractmethod
+from typing import Any, Dict, List
 from src.llm.llm_response import LLMResponse
+from src.lib.chat_history import ChatMessage
 
-class BaseProvider:
+class BaseProvider(ABC):
     name: str
 
+    @property
+    @abstractmethod
+    def tools(self) -> List[Dict[str, Any]]:
+        ...
+
+    @staticmethod
+    @abstractmethod
+    def build_content(chats: List[ChatMessage]):
+        ...
+    
+    @abstractmethod
     def inference(
         self, 
-        text: str, 
+        contents: str | List[Dict[str, Any]], 
         system_prompt: str = "",
     ) -> LLMResponse:   
-        """
-        High-level call:
-        - takes internal messages [{"role":"user"/"assistant", "content":"..."}]
-        - runs model + tools
-        - returns final assistant string
-        """
-        raise NotImplementedError
+        ...

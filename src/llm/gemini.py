@@ -1,5 +1,5 @@
 import os
-from typing import Any, Dict, List, cast
+from typing import Any, Dict, List
 from google.genai import Client as geminiClient, types
 
 from src.llm.llm_response import LLMResponse
@@ -9,8 +9,9 @@ from src.lib.chat_history import ChatMessage
 
 
 class GeminiProvider(BaseProvider):
+    name = "Gemini"
+
     def __init__(self, model: str = "models/gemini-2.5-flash"):
-        self.name = "gemini"
         default_model = os.environ.get("GEMINI_MODEL") or model
         self.model = default_model
         self.client = geminiClient(api_key=os.environ.get("GEMINI_API_KEY"))
