@@ -22,8 +22,11 @@ class ChatHistory():
     def __init__(self):
         self.messages: List[ChatMessage] = []
 
-    def add_message(self, message: ChatMessage) -> None:
-        self.messages.append(message)
+    def add_message(self, role: Role, content: Content) -> None:
+        self.messages.append({
+            "role": role,
+            "content": content
+        })
     
     def get_messages(self) -> List[ChatMessage]:
         return self.messages

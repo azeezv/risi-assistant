@@ -29,42 +29,42 @@ class GeminiProvider(BaseProvider):
             )
         return [{"function_declarations": fns}]
     
-    def parse_chat(self, chat: ChatMessage):
-        content = chat["content"]
+    @staticmethod
+    def build_content(chats: List[ChatMessage]):
+        contents = []
+        
+        for chat in chats:
+            content = chat["content"]
 
-        if isinstance(content, str): # text
-            return {"role": chat["role"], "parts": [{"text": content}]}
-        if "args" in content: # tool_call
-            return {"role": "model", "parts": [{"function_call": content}]}
-        if "response" in content: # tool_response
-            return {"role": "tool", "parts": [{"function_response": content}]}
+            parsed_chat = {}
 
-    def build_content(self, chat_history: List[ChatMessage], query: str):
-        content = []
-        for chat in chat_history:
-            content.append(
-                self.parse_chat(chat)
-            )
-        content.append(
-            {
-                "role": "user", 
-                "parts": [
-                    {"text": query}
-                ]
-            }
-        )
+            if isinstance(content, str): # text
+                parsed_chat = {"role": chat["role"], "parts": [{"text": content}]}
+            if "args" in content: # tool_call
+                parsed_chat = {"role": "model", "parts": [{"function_call": content}]}
+            if "response" in content: # tool_response
+                parsed_chat = {"role": "tool", "parts": [{"function_response": content}]}
 
-        return content
+            contents.append(parsed_chat)
+        
+        return contents
     
     def inference(
         self, 
-        text: str, 
+        contents: str | List[Dict[str, Any]], 
         system_prompt: str = "",
-        chat_history: List[ChatMessage] = []
     ) -> LLMResponse:
+        
+        _contents: List[Dict[str, Any]] = []
+
+        if isinstance(contents, str):
+            _contents.append({"role": "user", "parts": [{"text": contents }]})
+        else:
+            _contents = contents
+
         response = self.client.models.generate_content(
             model=self.model,
-            contents=self.build_content(chat_history, text),
+            contents=_contents,
             config=types.GenerateContentConfig(
                 safety_settings=[],
                 tools=self.tools,
@@ -90,6 +90,7 @@ class GeminiProvider(BaseProvider):
             
             if hasattr(part, "function_call") and part.function_call:
                 fn_call = part.function_call
+                print(fn_call)
 
                 tool_name = getattr(fn_call, "name", None)
                 tool_args = getattr(fn_call, "args", None)

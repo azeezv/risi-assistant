@@ -39,6 +39,9 @@ class TaskAgent:
         
         # Initialize chat history with the user request
         chat_history = ChatHistory()
+
+        # add user query to history
+        chat_history.add_message("user", user_request)
         
         step = 0
         while step < self.max_steps:
@@ -47,11 +50,11 @@ class TaskAgent:
             # === ANALYZE ===
             # Call Gemini with tools enabled
             print(f"🤔 Step {step}: Analyzing...")
-        
+
+            contents = self.llm.build_content(chat_history.messages)
 
             response = self.llm.inference(
-                text = user_request,
-                chat_history = chat_history.messages,
+                contents = contents,
                 system_prompt = self.system_prompt
             )
             
@@ -77,20 +80,14 @@ class TaskAgent:
                 # === VERIFY ===
                 print(f"✓ Result: {result_data}")
 
-                chat_history.add_message({
-                    "role": "model",
-                    "content": {
-                        "name": tool_name,
-                        "args": tool_args
-                    }
+                chat_history.add_message("model", {
+                    "name": tool_name,
+                    "args": tool_args
                 })
 
-                chat_history.add_message({
-                    "role": "user",
-                    "content": {
-                        "name": tool_name,
-                        "response": result_data
-                    }
+                chat_history.add_message("user", {
+                    "name": tool_name,
+                    "response": result_data
                 })
 
             elif response.text_content:
