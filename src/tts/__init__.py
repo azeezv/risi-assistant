@@ -1,7 +1,5 @@
-from .deepgram_tts import DeepGramTTS
-from .piper_tts import PiperTTS
+from .provider import TTSProvider
 
 __all__ = [
-    "DeepGramTTS",
-    "PiperTTS",
+    "TTSProvider"
 ]

@@ -9,7 +9,6 @@ class ContentArea(QWidget):
             parent = None, 
             compact_height = 100, 
             expanded_height = 150
-            
         ):
         super().__init__(parent)
         
@@ -70,7 +69,6 @@ class ContentArea(QWidget):
         # Get the main window (the top-level parent)
         main_window = self.window()
         
-        # --- FIX: Safety check for Pylance ---
         if main_window is None:
             return
 

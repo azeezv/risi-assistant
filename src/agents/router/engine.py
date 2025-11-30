@@ -2,7 +2,7 @@ import jinja2
 import json
 from typing import Dict, List, Optional
 from src.llm.gemini import GeminiProvider
-from src.tts.deepgram_tts import DeepGramTTS
+from src.tts import TTSProvider
 from src.agents.task.engine import TaskAgent
 from src.agents.reasoner.engine import ReasoningAgent
 import threading
@@ -13,7 +13,8 @@ template = env.get_template("system.j2")
 class RouterAgent:
     def __init__(self, set_content_area_ui):
         self.llm = GeminiProvider()
-        self.tts_service = DeepGramTTS()
+        self.tts_service = TTSProvider("piperTTS")
+        
         # Instantiate agents
         self.task_agent = TaskAgent()
         self.reasoner = ReasoningAgent()
