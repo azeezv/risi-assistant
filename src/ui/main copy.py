@@ -1,7 +1,6 @@
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QTextBrowser
 from PyQt6.QtCore import QObject, pyqtSignal
 from PyQt6.QtGui import QColor
-from markdown import markdown
 
 from src.lib.async_qt import AsyncQtThread
 from src.stt.deepgram_stt import DeepGramSTT
@@ -30,11 +29,6 @@ class MainWindow(QWidget):
         # --- TEXT LABEL BELOW VISUALIZER ---
         self.text_display = TextDisplay(self)
         self.text_display.append_word(".")
-
-        # --- TEXT LABEL BELOW VISUALIZER ---
-        self.content_area = QTextBrowser(self)
-        self.content_area.setOpenExternalLinks(True)
-        self.content_area.setVisible(False)
         
         # --- RECORD BTN ---
         self.toggle_btn = QPushButton("Start Mic")
@@ -43,6 +37,11 @@ class MainWindow(QWidget):
 
         layout.addWidget(self.visualizer)
         layout.addWidget(self.text_display)
+        # --- CONTENT AREA (Hidden by default) ---
+        # Use QTextBrowser to render HTML converted from Markdown
+        self.content_area = QTextBrowser(self)
+        self.content_area.setOpenExternalLinks(True)
+        self.content_area.setVisible(False)
         layout.addWidget(self.content_area)
         layout.addWidget(self.toggle_btn)
 
@@ -104,21 +103,22 @@ class MainWindow(QWidget):
 
     def on_transcript_received(self, text: str):
         # Update the TextDisplay with the transcript. Use the configured
+        # font color for consistency.
         self.current_instruction = text
         self.text_display.set_text(text, QColor(220, 220, 230))
 
     def on_silence_detected(self):
-        """Called when user stops speaking for > 1 seconds. Send instruction to LLM."""
+        """Called when user stops speaking for > 2 seconds. Send instruction to LLM."""
         if self.current_instruction.strip():
             # Pause mic to prevent AI response from being picked up
             self.stop_mic()
             
             print(f"🎯 Instruction ready for LLM: {self.current_instruction}")
-            self.send_to_router_agent(self.current_instruction)
+            self.send_to_llm(self.current_instruction)
             # Reset for next instruction
             self.current_instruction = ""
 
-    def send_to_router_agent(self, instruction: str):
+    def send_to_llm(self, instruction: str):
         """Process the instruction with an LLM and auto-restart mic after TTS finishes."""
         print(f"Sending to LLM: {instruction}")
         # Update UI with processing status
@@ -133,16 +133,84 @@ class MainWindow(QWidget):
         
         # Add assistant response to history (if available)
         if response:
-            self.conversation_history.add_assistant_message(response)
+            # The router may return a JSON string (e.g. {voice_summary, display_content})
+            display_markup = None
+            assistant_text = None
+            try:
+                if isinstance(response, str) and response.strip().startswith("{"):
+                    parsed = json.loads(response)
+                elif isinstance(response, dict):
+                    parsed = response
+                else:
+                    parsed = None
+            except Exception:
+                parsed = None
+
+            if isinstance(parsed, dict):
+                # Prefer explicit display_content if present
+                display_markup = parsed.get("display_content") or parsed.get("display")
+                # For conversation history / TTS, prefer the voice_summary or a short response_text
+                assistant_text = parsed.get("voice_summary") or parsed.get("response_text") or parsed.get("message")
+
+            # Fallbacks
+            if assistant_text is None:
+                # if response is a plain string, use it
+                if isinstance(response, str):
+                    assistant_text = response
+                else:
+                    assistant_text = json.dumps(response)
+
+            # Save assistant message (text summary) to history
+            self.conversation_history.add_assistant_message(assistant_text)
+
+            # If we found displayable markdown/HTML, render it
+            if display_markup:
+                html = self._markdown_to_html(display_markup)
+                self.content_area.setHtml(html)
+                self.content_area.setVisible(True)
+                # Expand window to show content area
+                try:
+                    self.resize(500, 600)
+                except Exception:
+                    pass
+            else:
+                # If no explicit display content but the assistant_text looks like markdown, render that
+                if self._looks_like_markdown(assistant_text):
+                    html = self._markdown_to_html(assistant_text)
+                    self.content_area.setHtml(html)
+                    self.content_area.setVisible(True)
+                    try:
+                        self.resize(500, 600)
+                    except Exception:
+                        pass
         
         # Auto-restart mic after LLM/TTS completes
         self.start_mic()
 
-    def set_content_area_markdown(self, md_text: str):
-        """Set the content area text using markdown formatting."""
-        html = markdown(md_text, extensions=['fenced_code', 'tables'])
-        self.content_area.setHtml(html)
-        self.content_area.setVisible(True)
+    def _looks_like_markdown(self, text: str) -> bool:
+        """Heuristic: returns True if text likely contains Markdown/rich content."""
+        if not text or not isinstance(text, str):
+            return False
+        markers = ['```', '\n#', '\n##', '| ', '\n* ', '```']
+        for m in markers:
+            if m in text:
+                return True
+        # If it contains multiple newlines and punctuation typical of markdown
+        if text.count('\n') > 3 and any(ch in text for ch in ['```', '#', '*', '`', '|']):
+            return True
+        return False
+
+    def _markdown_to_html(self, md_text: str) -> str:
+        """Convert Markdown to HTML. Use `markdown` package if available, otherwise fallback to simple conversion."""
+        try:
+            import markdown
+            html = markdown.markdown(md_text, extensions=['fenced_code', 'tables'])
+            return html
+        except Exception:
+            # Fallback: escape basic HTML and convert newlines to <br>
+            import html as _html
+            escaped = _html.escape(md_text)
+            return '<pre style="white-space:pre-wrap;">' + escaped + '</pre>'
 
     def closeEvent(self, event):
         """Ensure background threads and async loops are stopped on window close."""

@@ -1,4 +1,4 @@
-from typing import Dict, List, Union, Any
+from src.llm.llm_response import LLMResponse
 
 class BaseProvider:
     name: str
@@ -6,9 +6,8 @@ class BaseProvider:
     def inference(
         self, 
         text: str, 
-        system_prompt: str = "", 
-        tools: List[Dict[str, Any]] | None = None,
-    ) -> Union[str, Dict[str, Any]]:   
+        system_prompt: str = "",
+    ) -> LLMResponse:   
         """
         High-level call:
         - takes internal messages [{"role":"user"/"assistant", "content":"..."}]

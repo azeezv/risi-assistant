@@ -12,18 +12,18 @@ template = env.get_template("system.j2")
 
 class RouterAgent:
     def __init__(self):
-        # self.tools = tools
-        self.system_prompt = self.__system_prompt()
         self.llm = GeminiProvider()
         self.tts_service = DeepGramTTS()
         # Instantiate agents
         self.task_agent = TaskAgent()
         self.reasoner = ReasoningAgent()
     
-    def __system_prompt(self) -> str:
+    @property
+    def system_prompt(self):
         return template.render()
     
     def run(self, instruction: str, history: Optional[List[Dict[str, str]]] = None) -> Optional[str]:
+        
         try:
             # Build context from conversation history if provided
             context_text = ""
@@ -42,10 +42,14 @@ class RouterAgent:
             
             response = self.llm.inference(
                 text=full_text,
-                system_prompt=self.system_prompt,
-                tools=self.llm.tools,
+                system_prompt=self.system_prompt
             )
-            jsonData = json.loads(response)
+
+            if not response.text_content:
+                self.tts_service.speak("Sorry, I couldn't process your request.")
+                return "Could not process the request."
+
+            jsonData = json.loads(response.text_content)
             type = jsonData.get("type")
 
             print(jsonData)

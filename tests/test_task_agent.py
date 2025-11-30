@@ -10,7 +10,10 @@ Example usage of the TaskAgent with ReAct pattern.
 """
 
 from src.agents.task import TaskAgent
+from dotenv import load_dotenv
 
+
+load_dotenv()
 
 def main():
     # Initialize the agent
