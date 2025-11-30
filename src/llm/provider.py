@@ -9,9 +9,10 @@ LLM_PROVIDER_MAP: Dict[str, Type[BaseProvider]] = {
 
 class LLMProvider():
 
-    def __init__(self, provider: str, model: Optional[str] = None):
+    def __init__(self, provider: str):
         
         ProviderClass = LLM_PROVIDER_MAP[provider]
 
-        self.model = ProviderClass(model=model)
+        # todo        
+        self.model = ProviderClass(model="models/gemini-2.5-flash")
 

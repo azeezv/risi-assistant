@@ -11,9 +11,8 @@ from src.lib.chat_history import ChatMessage
 class GeminiProvider(BaseProvider):
     name = "Gemini"
 
-    def __init__(self, model: str = "models/gemini-2.5-flash"):
-        default_model = os.environ.get("GEMINI_MODEL") or model
-        self.model = default_model
+    def __init__(self, model: str):
+        self.model = model
         self.client = geminiClient(api_key=os.environ.get("GEMINI_API_KEY"))
 
     @property
@@ -77,11 +76,14 @@ class GeminiProvider(BaseProvider):
         else:
             _contents = contents
 
+        print(self.model)
+        print(config)
         response = self.client.models.generate_content(
             model=self.model,
             contents=_contents,
             config=config
         )
+
 
         candidates = getattr(response, "candidates", []) or []
         if not candidates:
@@ -94,6 +96,7 @@ class GeminiProvider(BaseProvider):
         
         content = getattr(model_candidate, "content", None)
         parts = getattr(content, "parts", []) or []
+        print("------> ", parts)
 
         for part in parts:
             txt = getattr(part, "text", "")
