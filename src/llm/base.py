@@ -24,5 +24,7 @@ class BaseProvider(ABC):
         self, 
         contents: str | List[Dict[str, Any]], 
         system_prompt: str = "",
+        json_mode: bool = False,
+        response_schema = None
     ) -> LLMResponse:   
         ...

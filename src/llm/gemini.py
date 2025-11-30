@@ -54,9 +54,23 @@ class GeminiProvider(BaseProvider):
         self, 
         contents: str | List[Dict[str, Any]], 
         system_prompt: str = "",
+        json_mode: bool = False,
+        response_schema = None
     ) -> LLMResponse:
         
         _contents: List[Dict[str, Any]] = []
+
+        tools = None if json_mode else self.tools
+        config = types.GenerateContentConfig(
+            safety_settings=[],
+            tools=tools,
+            system_instruction=system_prompt,
+        )
+
+        if json_mode:
+            config.response_mime_type = "application/json"
+        if response_schema:
+            config.response_schema = response_schema
 
         if isinstance(contents, str):
             _contents.append({"role": "user", "parts": [{"text": contents }]})
@@ -66,11 +80,7 @@ class GeminiProvider(BaseProvider):
         response = self.client.models.generate_content(
             model=self.model,
             contents=_contents,
-            config=types.GenerateContentConfig(
-                safety_settings=[],
-                tools=self.tools,
-                system_instruction=system_prompt,
-            )
+            config=config
         )
 
         candidates = getattr(response, "candidates", []) or []
@@ -87,7 +97,7 @@ class GeminiProvider(BaseProvider):
 
         for part in parts:
             txt = getattr(part, "text", "")
-            text_content = txt
+            text_content += txt
             
             if hasattr(part, "function_call") and part.function_call:
                 fn_call = part.function_call

@@ -1,5 +1,6 @@
 import jinja2
 import json
+from pydantic import BaseModel
 
 from src.lib.system_info import SystemInfo
 from src.llm import GeminiProvider
@@ -7,6 +8,9 @@ from src.llm import GeminiProvider
 env = jinja2.Environment(loader=jinja2.PackageLoader("src.agents.reasoner", ""))
 template = env.get_template("system.j2")
 
+class ReasonerOutput(BaseModel):
+    voice_summary: str
+    display_content: str
 
 class ReasoningAgent:
     """
@@ -34,10 +38,13 @@ class ReasoningAgent:
     
         # Call Gemini
         print("🤔 Analyzing problem...")
+        print(query)
         
         response = self.llm.inference(
             contents=query,
-            system_prompt=self.system_prompt
+            system_prompt=self.system_prompt,
+            json_mode=True,
+            response_schema=ReasonerOutput
         )
         
         if not response.text_content:
