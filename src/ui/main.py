@@ -12,7 +12,7 @@ class MainWindow(QWidget):
     def __init__(self):
         super().__init__()
 
-        self.setWindowTitle("Voice Assistant")
+        self.setWindowTitle("VoxAI")
         self.resize(500, 220)
         self.setStyleSheet("background-color: rgb(15, 15, 30);")
         

@@ -52,7 +52,13 @@ class RouterAgent:
                 self.tts_service.speak("Sorry, I couldn't process your request.")
                 return "Could not process the request."
 
-            jsonData = json.loads(response.text_content)
+            jsonData = {}
+
+            try:
+                jsonData = json.loads(response.text_content)
+            except:
+                raise Exception("LLM returned a non-json")
+
             type = jsonData.get("type")
 
             print(jsonData)
@@ -119,6 +125,7 @@ class RouterAgent:
             return response_text
 
         except Exception as e:
+            threading.Thread(target=self.tts_service.speak, args=("I’m sorry, could you repeat that?",), daemon=True).start()
             print(f"Error in RouterAgent: {e}")
             return None
 
